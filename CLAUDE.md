@@ -150,6 +150,7 @@ Chỉ dùng **dark theme** trên toàn bộ trang. Khai báo token Tailwind gi�
 
 | File | Mô tả | Liên kết đến |
 | --- | --- | --- |
+| `index.html` | Trang giới thiệu công ty thương mại điện tử SHOPEX, sử dụng animate.style | `login.html`, `register.html` |
 | `login.html` | Đăng nhập | `register.html` |
 | `register.html` | Đăng ký | `login.html` |
 | `charts.html` | Báo cáo thương mại điện tử (doanh thu, kết quả kinh doanh, marketing) bằng Chart.js + bảng, dữ liệu mock | `login.html` |
