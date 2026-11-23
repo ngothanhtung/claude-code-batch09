@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>E-commerce report – Ember</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&family=Poppins:wght@700;800&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#090A14',
+            surface: '#11131F',
+            line: '#23263A',
+            muted: '#9A9DB5',
+            primary: { DEFAULT: '#DF6B33', hover: '#E97E4A' },
+          },
+          fontFamily: {
+            heading: ['Poppins', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+  <style>
+    html { background: #090A14; scroll-behavior: smooth; scroll-padding-top: 6rem; }
+    body { font-family: 'Inter', sans-serif; font-weight: 400; }
+    h1, h2, h3, .font-heading { font-family: 'Poppins', sans-serif; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .rise { animation: rise .6s ease-out both; }
+
+    .chart-box { position: relative; height: 18rem; }
+    .chart-box.tall { height: 20rem; }
+    .num { font-variant-numeric: tabular-nums; }
+    .scroll-x { scrollbar-width: thin; scrollbar-color: #23263A transparent; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .rise { animation: none; }
+      * { transition-duration: 0s !important; }
+    }
+  </style>
+</head>
+
+<body class="bg-ink text-white antialiased min-h-screen">
+
+  <!-- Top bar -->
+  <header class="sticky top-0 z-20 border-b border-line bg-ink/90 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+      <a href="charts.html" class="inline-flex items-center gap-2.5 font-heading font-extrabold text-xl w-fit rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+        <span class="grid h-9 w-9 place-items-center rounded-lg bg-primary text-ink"><i data-lucide="flame" class="h-5 w-5" aria-hidden="true"></i></span>
+        Ember
+      </a>
+
+      <nav aria-label="Report sections" class="hidden md:flex items-center gap-1 text-sm">
+        <a href="#sales" class="rounded-lg px-3 py-2 text-muted hover:text-white focus-visible:outline-2 focus-visible:outline-primary">Sales</a>
+        <a href="#business" class="rounded-lg px-3 py-2 text-muted hover:text-white focus-visible:outline-2 focus-visible:outline-primary">Business results</a>
+        <a href="#marketing" class="rounded-lg px-3 py-2 text-muted hover:text-white focus-visible:outline-2 focus-visible:outline-primary">Marketing</a>
+      </nav>
+
+      <a href="login.html" class="inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-3 py-2 text-sm text-muted hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+        <i data-lucide="log-out" class="h-4 w-4" aria-hidden="true"></i>
+        Sign out
+      </a>
+    </div>
+    <nav aria-label="Report sections" class="scroll-x md:hidden flex gap-1 overflow-x-auto border-t border-line px-4 py-2 text-sm">
+      <a href="#sales" class="shrink-0 rounded-lg px-3 py-1.5 text-muted hover:text-white focus-visible:outline-2 focus-visible:outline-primary">Sales</a>
+      <a href="#business" class="shrink-0 rounded-lg px-3 py-1.5 text-muted hover:text-white focus-visible:outline-2 focus-visible:outline-primary">Business results</a>
+      <a href="#marketing" class="shrink-0 rounded-lg px-3 py-1.5 text-muted hover:text-white focus-visible:outline-2 focus-visible:outline-primary">Marketing</a>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-12">
+
+    <!-- Title + range filter -->
+    <section class="rise flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h1 class="font-heading font-extrabold text-3xl sm:text-4xl tracking-tight">E-commerce report</h1>
+        <p class="mt-2 text-muted">Sales, business results and marketing performance. Demo data, generated locally.</p>
+      </div>
+      <div class="w-full sm:w-52">
+        <label for="range" class="mb-2 block text-sm font-medium">Date range</label>
+        <div class="relative">
+          <i data-lucide="calendar" class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" aria-hidden="true"></i>
+          <select id="range" class="w-full appearance-none rounded-lg border border-line bg-surface py-3 pl-11 pr-10 text-base text-white focus:outline-none focus:ring-2 focus:ring-primary">
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+          <i data-lucide="chevron-down" class="pointer-events-none absolute right-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" aria-hidden="true"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPI cards -->
+    <section aria-label="Key metrics">
+      <div id="kpis" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"></div>
+      <p class="mt-3 text-sm text-muted">Change is compared with the previous period of the same length.</p>
+    </section>
+
+    <!-- Sales -->
+    <section id="sales" aria-labelledby="sales-title" class="space-y-6">
+      <div class="flex items-center gap-3">
+        <span class="grid h-9 w-9 place-items-center rounded-lg bg-primary text-ink"><i data-lucide="shopping-cart" class="h-5 w-5" aria-hidden="true"></i></span>
+        <h2 id="sales-title" class="font-heading font-extrabold text-2xl">Sales revenue</h2>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-3">
+        <article class="rounded-xl border border-line bg-surface p-5 lg:col-span-2">
+          <h3 class="font-heading font-bold text-lg">Revenue and orders</h3>
+          <p class="mb-4 text-sm text-muted">Daily revenue (line) and number of orders (bars).</p>
+          <div class="chart-box tall"><canvas id="chart-revenue" role="img" aria-label="Daily revenue and orders chart"></canvas></div>
+        </article>
+        <article class="rounded-xl border border-line bg-surface p-5">
+          <h3 class="font-heading font-bold text-lg">Revenue by category</h3>
+          <p class="mb-4 text-sm text-muted">Share of revenue in the selected range.</p>
+          <div class="chart-box tall"><canvas id="chart-category" role="img" aria-label="Revenue by category doughnut chart"></canvas></div>
+        </article>
+      </div>
+
+      <article class="rounded-xl border border-line bg-surface">
+        <div class="p-5 pb-3">
+          <h3 class="font-heading font-bold text-lg">Top products</h3>
+          <p class="text-sm text-muted">Best sellers by revenue.</p>
+        </div>
+        <div class="scroll-x overflow-x-auto">
+          <table class="w-full min-w-[640px] text-left text-sm">
+            <caption class="sr-only">Top products by revenue</caption>
+            <thead class="border-y border-line text-muted">
+              <tr>
+                <th scope="col" class="px-5 py-3 font-medium">Product</th>
+                <th scope="col" class="px-5 py-3 font-medium">Category</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">Units sold</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">Revenue</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">Share</th>
+              </tr>
+            </thead>
+            <tbody id="table-products" class="divide-y divide-line"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <!-- Business results -->
+    <section id="business" aria-labelledby="business-title" class="space-y-6">
+      <div class="flex items-center gap-3">
+        <span class="grid h-9 w-9 place-items-center rounded-lg bg-primary text-ink"><i data-lucide="wallet" class="h-5 w-5" aria-hidden="true"></i></span>
+        <h2 id="business-title" class="font-heading font-extrabold text-2xl">Business results</h2>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-3">
+        <article class="rounded-xl border border-line bg-surface p-5 lg:col-span-2">
+          <h3 class="font-heading font-bold text-lg">Profit and loss, last 12 months</h3>
+          <p class="mb-4 text-sm text-muted">Revenue, total costs and net profit per month.</p>
+          <div class="chart-box tall"><canvas id="chart-pnl" role="img" aria-label="Monthly revenue, costs and net profit chart"></canvas></div>
+        </article>
+        <article class="rounded-xl border border-line bg-surface p-5">
+          <h3 class="font-heading font-bold text-lg">Revenue by region</h3>
+          <p class="mb-4 text-sm text-muted">Last 12 months.</p>
+          <div class="chart-box tall"><canvas id="chart-region" role="img" aria-label="Revenue by region bar chart"></canvas></div>
+        </article>
+      </div>
+
+      <article class="rounded-xl border border-line bg-surface">
+        <div class="p-5 pb-3">
+          <h3 class="font-heading font-bold text-lg">Monthly results</h3>
+          <p class="text-sm text-muted">Gross profit is revenue minus cost of goods. Net profit also subtracts marketing and operating costs.</p>
+        </div>
+        <div class="scroll-x overflow-x-auto">
+          <table class="w-full min-w-[760px] text-left text-sm">
+            <caption class="sr-only">Monthly profit and loss</caption>
+            <thead class="border-y border-line text-muted">
+              <tr>
+                <th scope="col" class="px-5 py-3 font-medium">Month</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">Revenue</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">Cost of goods</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">Gross profit</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">Marketing</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">Operating costs</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">Net profit</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">Margin</th>
+              </tr>
+            </thead>
+            <tbody id="table-pnl" class="divide-y divide-line"></tbody>
+            <tfoot id="table-pnl-foot" class="border-t border-line font-medium"></tfoot>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <!-- Marketing -->
+    <section id="marketing" aria-labelledby="marketing-title" class="space-y-6">
+      <div class="flex items-center gap-3">
+        <span class="grid h-9 w-9 place-items-center rounded-lg bg-primary text-ink"><i data-lucide="megaphone" class="h-5 w-5" aria-hidden="true"></i></span>
+        <h2 id="marketing-title" class="font-heading font-extrabold text-2xl">Marketing metrics</h2>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-2">
+        <article class="rounded-xl border border-line bg-surface p-5">
+          <h3 class="font-heading font-bold text-lg">Spend and attributed revenue by channel</h3>
+          <p class="mb-4 text-sm text-muted">Compare what each channel costs with what it brings in.</p>
+          <div class="chart-box"><canvas id="chart-channel" role="img" aria-label="Spend and attributed revenue by channel chart"></canvas></div>
+        </article>
+        <article class="rounded-xl border border-line bg-surface p-5">
+          <h3 class="font-heading font-bold text-lg">Conversion funnel</h3>
+          <p class="mb-4 text-sm text-muted">From site sessions to completed purchases.</p>
+          <div class="chart-box"><canvas id="chart-funnel" role="img" aria-label="Conversion funnel chart"></canvas></div>
+        </article>
+      </div>
+
+      <article class="rounded-xl border border-line bg-surface p-5">
+        <h3 class="font-heading font-bold text-lg">Sessions and conversion rate</h3>
+        <p class="mb-4 text-sm text-muted">Daily site sessions (bars) and conversion rate (line).</p>
+        <div class="chart-box"><canvas id="chart-traffic" role="img" aria-label="Daily sessions and conversion rate chart"></canvas></div>
+      </article>
+
+      <article class="rounded-xl border border-line bg-surface">
+        <div class="p-5 pb-3">
+          <h3 class="font-heading font-bold text-lg">Campaign performance</h3>
+          <p class="text-sm text-muted">ROAS is attributed revenue divided by spend. CPA is spend per order.</p>
+        </div>
+        <div class="scroll-x overflow-x-auto">
+          <table class="w-full min-w-[900px] text-left text-sm">
+            <caption class="sr-only">Campaign performance</caption>
+            <thead class="border-y border-line text-muted">
+              <tr>
+                <th scope="col" class="px-5 py-3 font-medium">Campaign</th>
+                <th scope="col" class="px-5 py-3 font-medium">Channel</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">Spend</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">Impressions</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">Clicks</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">CTR</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">Orders</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">CPA</th>
+                <th scope="col" class="px-5 py-3 text-right font-medium">ROAS</th>
+              </tr>
+            </thead>
+            <tbody id="table-campaigns" class="divide-y divide-line"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="mt-12 border-t border-line">
+    <div class="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+      <p>All figures are mock data for demonstration.</p>
+      <a href="login.html" class="inline-flex items-center gap-2 hover:text-white focus-visible:outline-2 focus-visible:outline-primary">
+        <i data-lucide="arrow-left" class="h-4 w-4" aria-hidden="true"></i>
+        Back to sign in
+      </a>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    /* ---------- Mock data (seeded, so the demo is stable across reloads) ---------- */
+    function rng(seed) {
+      return function () {
+        seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+        let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    const rand = rng(20261123);
+    const noise = (amp) => 1 + (rand() - 0.5) * 2 * amp;
+
+    const TOTAL_DAYS = 180; // 90 current + 90 previous, enough for any range
+    const WEEKDAY = [0.92, 0.95, 1.0, 1.02, 1.05, 1.12, 1.08]; // Sun..Sat
+    const today = new Date();
+    const days = [];
+    for (let i = 0; i < TOTAL_DAYS; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (TOTAL_DAYS - 1 - i));
+      const sessions = Math.round(4300 * (1 + i * 0.0016) * WEEKDAY[d.getDay()] * noise(0.08));
+      const cvr = 0.024 * noise(0.1) * (1 + i * 0.0004);
+      const orders = Math.round(sessions * cvr);
+      const revenue = orders * 71 * noise(0.06);
+      const cogs = revenue * 0.52 * noise(0.015);
+      const fees = revenue * 0.06;
+      const marketing = revenue * 0.17 * noise(0.1);
+      const opex = 2100 * noise(0.04);
+      days.push({
+        date: d, sessions, orders, revenue, cogs, marketing,
+        profit: revenue - cogs - fees - marketing - opex,
+      });
+    }
+
+    const CATEGORIES = [
+      { name: 'Electronics', share: 0.34 },
+      { name: 'Fashion', share: 0.24 },
+      { name: 'Home & living', share: 0.19 },
+      { name: 'Beauty', share: 0.13 },
+      { name: 'Sports', share: 0.10 },
+    ];
+    const PRODUCTS = [
+      { name: 'Wireless earbuds Pro', category: 'Electronics', price: 89, share: 0.105 },
+      { name: '4K action camera', category: 'Electronics', price: 179, share: 0.088 },
+      { name: 'Running shoes Aero', category: 'Sports', price: 96, share: 0.074 },
+      { name: 'Smart LED desk lamp', category: 'Home & living', price: 54, share: 0.066 },
+      { name: 'Everyday hoodie', category: 'Fashion', price: 62, share: 0.061 },
+      { name: 'Vitamin C serum', category: 'Beauty', price: 34, share: 0.052 },
+      { name: 'Ceramic pour-over set', category: 'Home & living', price: 48, share: 0.047 },
+      { name: 'Leather crossbody bag', category: 'Fashion', price: 118, share: 0.043 },
+    ];
+    const CAMPAIGNS = [
+      { name: 'Brand search', channel: 'Google Ads', spend: 0.17, cpc: 0.62, ctr: 0.062, cvr: 0.058, aov: 78 },
+      { name: 'Shopping – bestsellers', channel: 'Google Ads', spend: 0.2, cpc: 0.88, ctr: 0.021, cvr: 0.034, aov: 82 },
+      { name: 'Lookalike – buyers', channel: 'Meta Ads', spend: 0.18, cpc: 0.94, ctr: 0.012, cvr: 0.027, aov: 69 },
+      { name: 'Retargeting – cart', channel: 'Meta Ads', spend: 0.1, cpc: 0.71, ctr: 0.018, cvr: 0.066, aov: 74 },
+      { name: 'Creator videos', channel: 'TikTok Ads', spend: 0.14, cpc: 0.55, ctr: 0.009, cvr: 0.019, aov: 58 },
+      { name: 'Abandoned cart flow', channel: 'Email', spend: 0.03, cpc: 0.09, ctr: 0.048, cvr: 0.092, aov: 76 },
+      { name: 'Weekly newsletter', channel: 'Email', spend: 0.02, cpc: 0.11, ctr: 0.031, cvr: 0.041, aov: 66 },
+      { name: 'Partner referrals', channel: 'Affiliate', spend: 0.16, cpc: 0.73, ctr: 0.015, cvr: 0.036, aov: 71 },
+    ];
+    const MONTH_NAMES = ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'];
+    const MONTHS = MONTH_NAMES.map((name, i) => {
+      const peak = name === 'Nov' || name === 'Dec' ? 1.22 : 1;
+      const revenue = Math.round(168000 * (1 + i * 0.045) * peak * noise(0.05));
+      const cogs = Math.round(revenue * 0.52 * noise(0.01));
+      const marketing = Math.round(revenue * 0.17 * noise(0.06));
+      const opex = Math.round(revenue * 0.14 * noise(0.04) + 9000);
+      return { name, revenue, cogs, marketing, opex, gross: revenue - cogs, net: revenue - cogs - marketing - opex };
+    });
+    const REGIONS = [
+      { name: 'North America', share: 0.41 },
+      { name: 'Europe', share: 0.27 },
+      { name: 'Asia Pacific', share: 0.21 },
+      { name: 'Latin America', share: 0.07 },
+      { name: 'Middle East', share: 0.04 },
+    ];
+
+    /* ---------- Helpers ---------- */
+    const sum = (arr, key) => arr.reduce((a, d) => a + d[key], 0);
+    const usd = (n) => '$' + Math.round(n).toLocaleString('en-US');
+    const usd2 = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const int = (n) => Math.round(n).toLocaleString('en-US');
+    const pct = (n, d = 1) => (n * 100).toFixed(d) + '%';
+    const compact = (n) => new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+    const dayLabel = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    /* ---------- Chart.js setup (theme tokens only) ---------- */
+    const C = {
+      primary: '#DF6B33',
+      hover: '#E97E4A',
+      primaryFade: 'rgba(223,107,51,.25)',
+      primarySoft: 'rgba(223,107,51,.55)',
+      muted: '#9A9DB5',
+      mutedSoft: 'rgba(154,157,181,.45)',
+      white: '#FFFFFF',
+      line: '#23263A',
+    };
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    Chart.defaults.color = C.muted;
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.borderColor = C.line;
+    Chart.defaults.maintainAspectRatio = false;
+    Chart.defaults.animation = reduceMotion ? false : { duration: 500 };
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+    Chart.defaults.plugins.legend.labels.boxWidth = 8;
+    Chart.defaults.plugins.tooltip.backgroundColor = '#11131F';
+    Chart.defaults.plugins.tooltip.borderColor = C.line;
+    Chart.defaults.plugins.tooltip.borderWidth = 1;
+    Chart.defaults.plugins.tooltip.titleColor = C.white;
+    Chart.defaults.plugins.tooltip.bodyColor = C.muted;
+    Chart.defaults.plugins.tooltip.padding = 10;
+
+    const gridX = { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } };
+    const gridY = (cb) => ({ beginAtZero: true, grid: { color: C.line }, border: { display: false }, ticks: { callback: cb } });
+
+    const charts = {};
+    function draw(id, config) {
+      if (charts[id]) charts[id].destroy();
+      charts[id] = new Chart(document.getElementById(id), config);
+    }
+
+    /* ---------- Static (range independent) sections ---------- */
+    function renderBusiness() {
+      draw('chart-pnl', {
+        data: {
+          labels: MONTHS.map((m) => m.name),
+          datasets: [
+            { type: 'bar', label: 'Revenue', data: MONTHS.map((m) => m.revenue), backgroundColor: C.primary, borderRadius: 4, order: 2 },
+            { type: 'bar', label: 'Total costs', data: MONTHS.map((m) => m.cogs + m.marketing + m.opex), backgroundColor: C.mutedSoft, borderRadius: 4, order: 2 },
+            { type: 'line', label: 'Net profit', data: MONTHS.map((m) => m.net), borderColor: C.white, backgroundColor: C.white, tension: 0.35, pointRadius: 3, borderWidth: 2, order: 1 },
+          ],
+        },
+        options: {
+          interaction: { mode: 'index', intersect: false },
+          scales: { x: gridX, y: gridY((v) => '$' + compact(v)) },
+          plugins: { tooltip: { callbacks: { label: (c) => ` ${c.dataset.label}: ${usd(c.parsed.y)}` } } },
+        },
+      });
+
+      const yearRevenue = sum(MONTHS, 'revenue');
+      draw('chart-region', {
+        type: 'bar',
+        data: {
+          labels: REGIONS.map((r) => r.name),
+          datasets: [{ label: 'Revenue', data: REGIONS.map((r) => Math.round(yearRevenue * r.share)), backgroundColor: C.primary, borderRadius: 4 }],
+        },
+        options: {
+          indexAxis: 'y',
+          scales: { x: gridY((v) => '$' + compact(v)), y: { grid: { display: false } } },
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` ${usd(c.parsed.x)}` } } },
+        },
+      });
+
+      document.getElementById('table-pnl').innerHTML = MONTHS.map((m) => `
+        <tr class="hover:bg-ink/40">
+          <th scope="row" class="px-5 py-3 font-normal">${m.name}</th>
+          <td class="num px-5 py-3 text-right">${usd(m.revenue)}</td>
+          <td class="num px-5 py-3 text-right text-muted">${usd(m.cogs)}</td>
+          <td class="num px-5 py-3 text-right">${usd(m.gross)}</td>
+          <td class="num px-5 py-3 text-right text-muted">${usd(m.marketing)}</td>
+          <td class="num px-5 py-3 text-right text-muted">${usd(m.opex)}</td>
+          <td class="num px-5 py-3 text-right ${m.net < 0 ? 'text-red-400' : 'text-primary'}">${usd(m.net)}</td>
+          <td class="num px-5 py-3 text-right">${pct(m.net / m.revenue)}</td>
+        </tr>`).join('');
+
+      const t = { revenue: sum(MONTHS, 'revenue'), cogs: sum(MONTHS, 'cogs'), gross: sum(MONTHS, 'gross'), marketing: sum(MONTHS, 'marketing'), opex: sum(MONTHS, 'opex'), net: sum(MONTHS, 'net') };
+      document.getElementById('table-pnl-foot').innerHTML = `
+        <tr>
+          <th scope="row" class="px-5 py-3">Total</th>
+          <td class="num px-5 py-3 text-right">${usd(t.revenue)}</td>
+          <td class="num px-5 py-3 text-right">${usd(t.cogs)}</td>
+          <td class="num px-5 py-3 text-right">${usd(t.gross)}</td>
+          <td class="num px-5 py-3 text-right">${usd(t.marketing)}</td>
+          <td class="num px-5 py-3 text-right">${usd(t.opex)}</td>
+          <td class="num px-5 py-3 text-right text-primary">${usd(t.net)}</td>
+          <td class="num px-5 py-3 text-right">${pct(t.net / t.revenue)}</td>
+        </tr>`;
+    }
+
+    /* ---------- Range dependent sections ---------- */
+    function renderKpis(cur, prev) {
+      const t = (set, k) => sum(set, k);
+      const cards = [
+        { icon: 'dollar-sign', label: 'Revenue', value: usd(t(cur, 'revenue')), now: t(cur, 'revenue'), before: t(prev, 'revenue') },
+        { icon: 'package', label: 'Orders', value: int(t(cur, 'orders')), now: t(cur, 'orders'), before: t(prev, 'orders') },
+        { icon: 'receipt', label: 'Average order value', value: usd2(t(cur, 'revenue') / t(cur, 'orders')), now: t(cur, 'revenue') / t(cur, 'orders'), before: t(prev, 'revenue') / t(prev, 'orders') },
+        { icon: 'piggy-bank', label: 'Net profit', value: usd(t(cur, 'profit')), now: t(cur, 'profit'), before: t(prev, 'profit') },
+        { icon: 'megaphone', label: 'Marketing spend', value: usd(t(cur, 'marketing')), now: t(cur, 'marketing'), before: t(prev, 'marketing') },
+        { icon: 'mouse-pointer-click', label: 'Conversion rate', value: pct(t(cur, 'orders') / t(cur, 'sessions'), 2), now: t(cur, 'orders') / t(cur, 'sessions'), before: t(prev, 'orders') / t(prev, 'sessions') },
+      ];
+      document.getElementById('kpis').innerHTML = cards.map((c) => {
+        const delta = (c.now - c.before) / c.before;
+        const up = delta >= 0;
+        return `
+          <article class="rounded-xl border border-line bg-surface p-5">
+            <div class="flex items-center justify-between text-muted">
+              <h3 class="text-sm">${c.label}</h3>
+              <i data-lucide="${c.icon}" class="h-5 w-5" aria-hidden="true"></i>
+            </div>
+            <p class="num mt-3 font-heading font-extrabold text-2xl">${c.value}</p>
+            <p class="mt-2 flex items-center gap-1 text-sm ${up ? 'text-primary' : 'text-red-400'}">
+              <i data-lucide="${up ? 'trending-up' : 'trending-down'}" class="h-4 w-4" aria-hidden="true"></i>
+              <span class="num">${up ? '+' : ''}${(delta * 100).toFixed(1)}%</span>
+              <span class="sr-only">${up ? 'increase' : 'decrease'} versus previous period</span>
+            </p>
+          </article>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function renderSales(cur) {
+      const labels = cur.map((d) => dayLabel(d.date));
+      draw('chart-revenue', {
+        data: {
+          labels,
+          datasets: [
+            { type: 'line', label: 'Revenue', data: cur.map((d) => Math.round(d.revenue)), borderColor: C.primary, backgroundColor: C.primary, tension: 0.35, pointRadius: cur.length > 30 ? 0 : 3, borderWidth: 2, yAxisID: 'y', order: 1 },
+            { type: 'bar', label: 'Orders', data: cur.map((d) => d.orders), backgroundColor: C.primaryFade, borderRadius: 3, yAxisID: 'y1', order: 2 },
+          ],
+        },
+        options: {
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: gridX,
+            y: gridY((v) => '$' + compact(v)),
+            y1: { position: 'right', beginAtZero: true, grid: { display: false }, border: { display: false }, ticks: { callback: (v) => compact(v) } },
+          },
+          plugins: { tooltip: { callbacks: { label: (c) => c.dataset.label === 'Revenue' ? ` Revenue: ${usd(c.parsed.y)}` : ` Orders: ${int(c.parsed.y)}` } } },
+        },
+      });
+
+      const revenue = sum(cur, 'revenue');
+      draw('chart-category', {
+        type: 'doughnut',
+        data: {
+          labels: CATEGORIES.map((c) => c.name),
+          datasets: [{
+            data: CATEGORIES.map((c) => Math.round(revenue * c.share)),
+            backgroundColor: [C.primary, C.hover, C.white, C.muted, '#3A3E5A'],
+            borderColor: '#11131F',
+            borderWidth: 3,
+          }],
+        },
+        options: {
+          cutout: '62%',
+          plugins: {
+            legend: { position: 'bottom' },
+            tooltip: { callbacks: { label: (c) => ` ${c.label}: ${usd(c.parsed)} (${pct(c.parsed / revenue, 0)})` } },
+          },
+        },
+      });
+
+      document.getElementById('table-products').innerHTML = PRODUCTS.map((p) => {
+        const rev = revenue * p.share;
+        return `
+          <tr class="hover:bg-ink/40">
+            <th scope="row" class="px-5 py-3 font-normal">${p.name}</th>
+            <td class="px-5 py-3 text-muted">${p.category}</td>
+            <td class="num px-5 py-3 text-right">${int(rev / p.price)}</td>
+            <td class="num px-5 py-3 text-right">${usd(rev)}</td>
+            <td class="num px-5 py-3 text-right text-muted">${pct(p.share)}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    function renderMarketing(cur) {
+      const spendTotal = sum(cur, 'marketing');
+      const rows = CAMPAIGNS.map((c) => {
+        const spend = spendTotal * c.spend;
+        const clicks = spend / c.cpc;
+        const impressions = clicks / c.ctr;
+        const orders = clicks * c.cvr;
+        const revenue = orders * c.aov;
+        return { ...c, spendUsd: spend, clicks, impressions, orders, revenue, cpa: spend / orders, roas: revenue / spend };
+      });
+
+      document.getElementById('table-campaigns').innerHTML = rows.map((r) => `
+        <tr class="hover:bg-ink/40">
+          <th scope="row" class="px-5 py-3 font-normal">${r.name}</th>
+          <td class="px-5 py-3 text-muted">${r.channel}</td>
+          <td class="num px-5 py-3 text-right">${usd(r.spendUsd)}</td>
+          <td class="num px-5 py-3 text-right text-muted">${int(r.impressions)}</td>
+          <td class="num px-5 py-3 text-right text-muted">${int(r.clicks)}</td>
+          <td class="num px-5 py-3 text-right">${pct(r.ctr)}</td>
+          <td class="num px-5 py-3 text-right">${int(r.orders)}</td>
+          <td class="num px-5 py-3 text-right">${usd2(r.cpa)}</td>
+          <td class="num px-5 py-3 text-right ${r.roas >= 3 ? 'text-primary' : r.roas < 1.5 ? 'text-red-400' : ''}">${r.roas.toFixed(2)}x</td>
+        </tr>`).join('');
+
+      const channels = [...new Set(rows.map((r) => r.channel))].map((name) => {
+        const set = rows.filter((r) => r.channel === name);
+        return { name, spend: sum(set, 'spendUsd'), revenue: sum(set, 'revenue') };
+      });
+      draw('chart-channel', {
+        type: 'bar',
+        data: {
+          labels: channels.map((c) => c.name),
+          datasets: [
+            { label: 'Spend', data: channels.map((c) => Math.round(c.spend)), backgroundColor: C.mutedSoft, borderRadius: 4 },
+            { label: 'Attributed revenue', data: channels.map((c) => Math.round(c.revenue)), backgroundColor: C.primary, borderRadius: 4 },
+          ],
+        },
+        options: {
+          interaction: { mode: 'index', intersect: false },
+          scales: { x: { grid: { display: false } }, y: gridY((v) => '$' + compact(v)) },
+          plugins: { tooltip: { callbacks: { label: (c) => ` ${c.dataset.label}: ${usd(c.parsed.y)}` } } },
+        },
+      });
+
+      const sessions = sum(cur, 'sessions');
+      const orders = sum(cur, 'orders');
+      const funnel = [
+        ['Sessions', sessions],
+        ['Product views', sessions * 0.58],
+        ['Cart adds', sessions * 0.11],
+        ['Checkouts', sessions * 0.052],
+        ['Purchases', orders],
+      ];
+      draw('chart-funnel', {
+        type: 'bar',
+        data: {
+          labels: funnel.map((f) => f[0]),
+          datasets: [{
+            label: 'Visitors',
+            data: funnel.map((f) => Math.round(f[1])),
+            backgroundColor: funnel.map((_, i) => (i === funnel.length - 1 ? C.white : `rgba(223,107,51,${1 - i * 0.2})`)),
+            borderRadius: 4,
+          }],
+        },
+        options: {
+          indexAxis: 'y',
+          scales: { x: gridY((v) => compact(v)), y: { grid: { display: false } } },
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: (c) => ` ${int(c.parsed.x)} (${pct(c.parsed.x / sessions, 1)} of sessions)` } },
+          },
+        },
+      });
+
+      draw('chart-traffic', {
+        data: {
+          labels: cur.map((d) => dayLabel(d.date)),
+          datasets: [
+            { type: 'line', label: 'Conversion rate', data: cur.map((d) => +(d.orders / d.sessions * 100).toFixed(2)), borderColor: C.white, backgroundColor: C.white, tension: 0.35, pointRadius: cur.length > 30 ? 0 : 3, borderWidth: 2, yAxisID: 'y1', order: 1 },
+            { type: 'bar', label: 'Sessions', data: cur.map((d) => d.sessions), backgroundColor: C.primarySoft, borderRadius: 3, yAxisID: 'y', order: 2 },
+          ],
+        },
+        options: {
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: gridX,
+            y: gridY((v) => compact(v)),
+            y1: { position: 'right', min: 0, grid: { display: false }, border: { display: false }, ticks: { callback: (v) => v + '%' } },
+          },
+          plugins: { tooltip: { callbacks: { label: (c) => c.dataset.label === 'Sessions' ? ` Sessions: ${int(c.parsed.y)}` : ` Conversion rate: ${c.parsed.y.toFixed(2)}%` } } },
+        },
+      });
+    }
+
+    function render(range) {
+      const cur = days.slice(-range);
+      const prev = days.slice(-range * 2, -range);
+      renderKpis(cur, prev);
+      renderSales(cur);
+      renderMarketing(cur);
+    }
+
+    renderBusiness();
+    render(30);
+    document.getElementById('range').addEventListener('change', (e) => render(Number(e.target.value)));
+  </script>
+</body>
+</html>

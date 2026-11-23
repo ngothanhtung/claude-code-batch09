@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Create account – Ember</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&family=Poppins:wght@700;800&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#090A14',
+            surface: '#11131F',
+            line: '#23263A',
+            muted: '#9A9DB5',
+            primary: { DEFAULT: '#DF6B33', hover: '#E97E4A' },
+          },
+          fontFamily: {
+            heading: ['Poppins', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    html { background: #090A14; }
+    body { font-family: 'Inter', sans-serif; font-weight: 400; }
+    h1, h2, .font-heading { font-family: 'Poppins', sans-serif; }
+
+    /* Brand panel: concentric rings radiating from one corner */
+    .rings {
+      background:
+        radial-gradient(circle at 100% 100%, transparent 0 120px, rgba(223,107,51,.55) 120px 122px, transparent 122px),
+        radial-gradient(circle at 100% 100%, transparent 0 220px, rgba(223,107,51,.38) 220px 222px, transparent 222px),
+        radial-gradient(circle at 100% 100%, transparent 0 340px, rgba(223,107,51,.24) 340px 342px, transparent 342px),
+        radial-gradient(circle at 100% 100%, transparent 0 480px, rgba(223,107,51,.14) 480px 482px, transparent 482px),
+        radial-gradient(circle at 100% 100%, transparent 0 640px, rgba(223,107,51,.08) 640px 642px, transparent 642px);
+    }
+    .ember-core {
+      background: radial-gradient(circle at 100% 100%, rgba(223,107,51,.35), transparent 340px);
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .rise { animation: rise .6s ease-out both; }
+    @media (prefers-reduced-motion: reduce) {
+      .rise { animation: none; }
+      * { transition-duration: 0s !important; }
+    }
+  </style>
+</head>
+
+<body class="bg-ink text-white antialiased min-h-screen">
+  <div class="min-h-screen grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+
+    <!-- Brand panel (desktop only, stays in view while the form scrolls) -->
+    <aside class="relative hidden lg:flex flex-col justify-between overflow-hidden border-r border-line p-12 xl:p-16 lg:sticky lg:top-0 lg:h-screen">
+      <div class="rings ember-core absolute inset-0" aria-hidden="true"></div>
+
+      <a href="login.html" class="relative inline-flex items-center gap-2.5 font-heading font-extrabold text-xl w-fit focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary rounded">
+        <span class="grid h-9 w-9 place-items-center rounded-lg bg-primary text-ink"><i data-lucide="flame" class="h-5 w-5"></i></span>
+        Ember
+      </a>
+
+      <div class="relative max-w-md">
+        <h2 class="font-heading font-extrabold text-5xl xl:text-6xl leading-[1.05] tracking-tight">
+          Start something worth keeping.
+        </h2>
+        <p class="mt-6 text-lg text-muted leading-relaxed">
+          Create your account in a minute and bring your projects, notes and team together.
+        </p>
+      </div>
+
+      <p class="relative text-sm text-muted">&copy; 2026 Ember, Inc.</p>
+    </aside>
+
+    <!-- Form panel -->
+    <main class="flex justify-center px-5 py-10 sm:px-8 sm:py-14 lg:items-center">
+      <div class="w-full max-w-xl rise">
+
+        <!-- Logo on tablet / mobile -->
+        <a href="login.html" class="lg:hidden mb-10 inline-flex items-center gap-2.5 font-heading font-extrabold text-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary rounded">
+          <span class="grid h-9 w-9 place-items-center rounded-lg bg-primary text-ink"><i data-lucide="flame" class="h-5 w-5"></i></span>
+          Ember
+        </a>
+
+        <h1 class="font-heading font-extrabold text-3xl sm:text-4xl tracking-tight">Create your account</h1>
+        <p class="mt-2 text-muted">Fields marked with * are required.</p>
+
+        <form id="register-form" class="mt-8 space-y-5" novalidate>
+
+          <!-- Full name -->
+          <div>
+            <label for="fullname" class="block text-sm mb-2">Full name *</label>
+            <div class="relative">
+              <i data-lucide="user" class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted"></i>
+              <input id="fullname" name="fullname" type="text" autocomplete="name" required placeholder="Jane Doe"
+                aria-describedby="fullname-error"
+                class="w-full rounded-xl border border-line bg-surface py-3 pl-11 pr-4 text-base text-white placeholder:text-muted/70 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40 aria-[invalid=true]:border-red-400" />
+            </div>
+            <p id="fullname-error" class="mt-1.5 hidden text-sm text-red-400" role="alert"></p>
+          </div>
+
+          <!-- Email + phone -->
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="email" class="block text-sm mb-2">Email *</label>
+              <div class="relative">
+                <i data-lucide="mail" class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted"></i>
+                <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com"
+                  aria-describedby="email-error"
+                  class="w-full rounded-xl border border-line bg-surface py-3 pl-11 pr-4 text-base text-white placeholder:text-muted/70 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40 aria-[invalid=true]:border-red-400" />
+              </div>
+              <p id="email-error" class="mt-1.5 hidden text-sm text-red-400" role="alert"></p>
+            </div>
+
+            <div>
+              <label for="phone" class="block text-sm mb-2">Phone number</label>
+              <div class="relative">
+                <i data-lucide="phone" class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted"></i>
+                <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" placeholder="10 digits"
+                  aria-describedby="phone-error"
+                  class="w-full rounded-xl border border-line bg-surface py-3 pl-11 pr-4 text-base text-white placeholder:text-muted/70 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40 aria-[invalid=true]:border-red-400" />
+              </div>
+              <p id="phone-error" class="mt-1.5 hidden text-sm text-red-400" role="alert"></p>
+            </div>
+          </div>
+
+          <!-- Password + confirm -->
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="password" class="block text-sm mb-2">Password *</label>
+              <div class="relative">
+                <i data-lucide="lock" class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted"></i>
+                <input id="password" name="password" type="password" autocomplete="new-password" required placeholder="At least 8 characters"
+                  aria-describedby="password-error"
+                  class="w-full rounded-xl border border-line bg-surface py-3 pl-11 pr-12 text-base text-white placeholder:text-muted/70 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40 aria-[invalid=true]:border-red-400" />
+                <button type="button" data-toggle="password" aria-label="Show password" aria-pressed="false"
+                  class="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-lg text-muted transition hover:text-white focus-visible:outline-2 focus-visible:outline-primary">
+                  <i data-lucide="eye" class="h-5 w-5"></i>
+                </button>
+              </div>
+              <p id="password-error" class="mt-1.5 hidden text-sm text-red-400" role="alert"></p>
+            </div>
+
+            <div>
+              <label for="confirm" class="block text-sm mb-2">Confirm password *</label>
+              <div class="relative">
+                <i data-lucide="lock-keyhole" class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted"></i>
+                <input id="confirm" name="confirm" type="password" autocomplete="new-password" required placeholder="Re-enter your password"
+                  aria-describedby="confirm-error"
+                  class="w-full rounded-xl border border-line bg-surface py-3 pl-11 pr-12 text-base text-white placeholder:text-muted/70 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40 aria-[invalid=true]:border-red-400" />
+                <button type="button" data-toggle="confirm" aria-label="Show password" aria-pressed="false"
+                  class="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-lg text-muted transition hover:text-white focus-visible:outline-2 focus-visible:outline-primary">
+                  <i data-lucide="eye" class="h-5 w-5"></i>
+                </button>
+              </div>
+              <p id="confirm-error" class="mt-1.5 hidden text-sm text-red-400" role="alert"></p>
+            </div>
+          </div>
+
+          <!-- Gender -->
+          <fieldset>
+            <legend class="block text-sm mb-2">Gender</legend>
+            <div class="grid grid-cols-3 gap-3">
+              <label class="cursor-pointer">
+                <input type="radio" name="gender" value="male" class="peer sr-only" />
+                <span class="flex items-center justify-center rounded-xl border border-line bg-surface px-3 py-3 text-sm transition hover:border-primary/60 peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary/60">Male</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="gender" value="female" class="peer sr-only" />
+                <span class="flex items-center justify-center rounded-xl border border-line bg-surface px-3 py-3 text-sm transition hover:border-primary/60 peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary/60">Female</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="gender" value="undisclosed" class="peer sr-only" />
+                <span class="flex items-center justify-center rounded-xl border border-line bg-surface px-3 py-3 text-sm text-center transition hover:border-primary/60 peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary/60">Prefer not to say</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <!-- Address -->
+          <div>
+            <label for="address" class="block text-sm mb-2">Address</label>
+            <div class="relative">
+              <i data-lucide="map-pin" class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted"></i>
+              <input id="address" name="address" type="text" autocomplete="street-address" placeholder="Street, city, country"
+                class="w-full rounded-xl border border-line bg-surface py-3 pl-11 pr-4 text-base text-white placeholder:text-muted/70 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40" />
+            </div>
+          </div>
+
+          <!-- Terms -->
+          <div>
+            <label for="terms" class="flex cursor-pointer select-none items-start gap-3 text-sm">
+              <input id="terms" name="terms" type="checkbox" class="peer sr-only" aria-describedby="terms-error" />
+              <span class="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border border-line bg-surface text-ink transition peer-checked:border-primary peer-checked:bg-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary/60 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-ink peer-aria-[invalid=true]:border-red-400 [&>svg]:opacity-0 peer-checked:[&>svg]:opacity-100">
+                <i data-lucide="check" class="h-3.5 w-3.5" stroke-width="3.5"></i>
+              </span>
+              <span>
+                I agree to the
+                <a href="#" class="text-primary hover:text-primary-hover underline-offset-4 hover:underline">Terms of Service</a>
+                and
+                <a href="#" class="text-primary hover:text-primary-hover underline-offset-4 hover:underline">Privacy Policy</a> *
+              </span>
+            </label>
+            <p id="terms-error" class="mt-1.5 hidden text-sm text-red-400" role="alert"></p>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit"
+            class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3.5 font-heading text-base font-bold text-ink transition hover:bg-primary-hover active:scale-[.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+            <i data-lucide="user-plus" class="h-5 w-5"></i>
+            Create account
+          </button>
+        </form>
+
+        <p class="mt-8 text-center text-sm">
+          <a href="login.html" class="inline-flex items-center gap-2 text-muted transition hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary rounded">
+            <i data-lucide="arrow-left" class="h-4 w-4"></i>
+            Back to sign in
+          </a>
+        </p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const form = document.getElementById('register-form');
+    const $ = (id) => document.getElementById(id);
+    const fullname = $('fullname'), email = $('email'), phone = $('phone'),
+          password = $('password'), confirm = $('confirm'), terms = $('terms');
+
+    // Show / hide password toggles
+    document.querySelectorAll('[data-toggle]').forEach((btn) => {
+      const input = $(btn.dataset.toggle);
+      btn.addEventListener('click', () => {
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.setAttribute('aria-pressed', String(show));
+        btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+        btn.innerHTML = `<i data-lucide="${show ? 'eye-off' : 'eye'}" class="h-5 w-5"></i>`;
+        lucide.createIcons();
+      });
+    });
+
+    // Phone accepts digits only
+    phone.addEventListener('input', () => {
+      phone.value = phone.value.replace(/\D/g, '').slice(0, 10);
+    });
+
+    function setError(input, message) {
+      const out = $(`${input.id}-error`);
+      if (message) {
+        input.setAttribute('aria-invalid', 'true');
+        out.textContent = message;
+        out.classList.remove('hidden');
+      } else {
+        input.removeAttribute('aria-invalid');
+        out.textContent = '';
+        out.classList.add('hidden');
+      }
+      return !message;
+    }
+
+    const rules = {
+      fullname: () => (fullname.value.trim() ? '' : 'Enter your full name.'),
+      email: () =>
+        !email.value.trim() ? 'Enter your email address.'
+        : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value) ? 'Enter a valid email address, like you@example.com.'
+        : '',
+      phone: () => (!phone.value || /^\d{10}$/.test(phone.value) ? '' : 'Phone number must be exactly 10 digits.'),
+      password: () =>
+        !password.value ? 'Create a password.'
+        : password.value.length < 8 ? 'Password must be at least 8 characters.'
+        : '',
+      confirm: () =>
+        !confirm.value ? 'Confirm your password.'
+        : confirm.value !== password.value ? 'Passwords do not match.'
+        : '',
+      terms: () => (terms.checked ? '' : 'You must agree to the terms to create an account.'),
+    };
+    const fields = { fullname, email, phone, password, confirm, terms };
+
+    const check = (name) => setError(fields[name], rules[name]());
+
+    // Re-validate a field live once it has shown an error
+    Object.entries(fields).forEach(([name, el]) => {
+      el.addEventListener(el === terms ? 'change' : 'input', () => {
+        if (el.hasAttribute('aria-invalid')) check(name);
+        if (name === 'password' && confirm.value) check('confirm');
+      });
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const results = Object.keys(fields).map((name) => [name, check(name)]);
+      const firstInvalid = results.find(([, ok]) => !ok);
+      if (firstInvalid) {
+        fields[firstInvalid[0]].focus();
+        return;
+      }
+      // Replace with your registration request
+      console.log('Registering', {
+        fullname: fullname.value.trim(),
+        email: email.value,
+        gender: form.gender.value || null,
+        address: form.address.value.trim() || null,
+        phone: phone.value || null,
+      });
+    });
+  </script>
+</body>
+</html>

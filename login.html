@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Sign in – Ember</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&family=Poppins:wght@700;800&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#090A14',
+            surface: '#11131F',
+            line: '#23263A',
+            muted: '#9A9DB5',
+            primary: { DEFAULT: '#DF6B33', hover: '#E97E4A' },
+          },
+          fontFamily: {
+            heading: ['Poppins', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    html { background: #090A14; }
+    body { font-family: 'Inter', sans-serif; font-weight: 400; }
+    h1, h2, .font-heading { font-family: 'Poppins', sans-serif; }
+
+    /* Brand panel: concentric rings radiating from one corner */
+    .rings {
+      background:
+        radial-gradient(circle at 100% 100%, transparent 0 120px, rgba(223,107,51,.55) 120px 122px, transparent 122px),
+        radial-gradient(circle at 100% 100%, transparent 0 220px, rgba(223,107,51,.38) 220px 222px, transparent 222px),
+        radial-gradient(circle at 100% 100%, transparent 0 340px, rgba(223,107,51,.24) 340px 342px, transparent 342px),
+        radial-gradient(circle at 100% 100%, transparent 0 480px, rgba(223,107,51,.14) 480px 482px, transparent 482px),
+        radial-gradient(circle at 100% 100%, transparent 0 640px, rgba(223,107,51,.08) 640px 642px, transparent 642px);
+    }
+    .ember-core {
+      background: radial-gradient(circle at 100% 100%, rgba(223,107,51,.35), transparent 340px);
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .rise { animation: rise .6s ease-out both; }
+    @media (prefers-reduced-motion: reduce) {
+      .rise { animation: none; }
+      * { transition-duration: 0s !important; }
+    }
+  </style>
+</head>
+
+<body class="bg-ink text-white antialiased min-h-screen">
+  <div class="min-h-screen grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+
+    <!-- Brand panel (desktop only) -->
+    <aside class="relative hidden lg:flex flex-col justify-between overflow-hidden border-r border-line p-12 xl:p-16">
+      <div class="rings ember-core absolute inset-0" aria-hidden="true"></div>
+
+      <a href="#" class="relative inline-flex items-center gap-2.5 font-heading font-extrabold text-xl w-fit focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary rounded">
+        <span class="grid h-9 w-9 place-items-center rounded-lg bg-primary text-ink"><i data-lucide="flame" class="h-5 w-5"></i></span>
+        Ember
+      </a>
+
+      <div class="relative max-w-md">
+        <h2 class="font-heading font-extrabold text-5xl xl:text-6xl leading-[1.05] tracking-tight">
+          Pick up right where you left off.
+        </h2>
+        <p class="mt-6 text-lg text-muted leading-relaxed">
+          Your projects, notes and team activity are waiting. Sign in to continue.
+        </p>
+      </div>
+
+      <p class="relative text-sm text-muted">&copy; 2026 Ember, Inc.</p>
+    </aside>
+
+    <!-- Form panel -->
+    <main class="flex items-center justify-center px-5 py-10 sm:px-8 sm:py-14">
+      <div class="w-full max-w-md rise">
+
+        <!-- Logo on tablet / mobile -->
+        <a href="#" class="lg:hidden mb-10 inline-flex items-center gap-2.5 font-heading font-extrabold text-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary rounded">
+          <span class="grid h-9 w-9 place-items-center rounded-lg bg-primary text-ink"><i data-lucide="flame" class="h-5 w-5"></i></span>
+          Ember
+        </a>
+
+        <h1 class="font-heading font-extrabold text-3xl sm:text-4xl tracking-tight">Welcome back</h1>
+        <p class="mt-2 text-muted">Sign in to your account to continue.</p>
+
+        <form id="login-form" class="mt-8 space-y-5" novalidate>
+          <!-- Email -->
+          <div>
+            <label for="email" class="block text-sm mb-2">Email</label>
+            <div class="relative">
+              <i data-lucide="mail" class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted"></i>
+              <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com"
+                aria-describedby="email-error"
+                class="w-full rounded-xl border border-line bg-surface py-3 pl-11 pr-4 text-base text-white placeholder:text-muted/70 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40 aria-[invalid=true]:border-red-400" />
+            </div>
+            <p id="email-error" class="mt-1.5 hidden items-center gap-1.5 text-sm text-red-400" role="alert"></p>
+          </div>
+
+          <!-- Password -->
+          <div>
+            <div class="mb-2 flex items-center justify-between">
+              <label for="password" class="block text-sm">Password</label>
+              <a href="#" class="text-sm text-primary hover:text-primary-hover underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded">Forgot password?</a>
+            </div>
+            <div class="relative">
+              <i data-lucide="lock" class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted"></i>
+              <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Enter your password"
+                aria-describedby="password-error"
+                class="w-full rounded-xl border border-line bg-surface py-3 pl-11 pr-12 text-base text-white placeholder:text-muted/70 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40 aria-[invalid=true]:border-red-400" />
+              <button type="button" id="toggle-password" aria-label="Show password" aria-pressed="false"
+                class="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-lg text-muted transition hover:text-white focus-visible:outline-2 focus-visible:outline-primary">
+                <i data-lucide="eye" class="h-5 w-5"></i>
+              </button>
+            </div>
+            <p id="password-error" class="mt-1.5 hidden text-sm text-red-400" role="alert"></p>
+          </div>
+
+          <!-- Remember me -->
+          <label for="remember" class="flex w-fit cursor-pointer select-none items-center gap-3 text-sm">
+            <input id="remember" name="remember" type="checkbox"
+              class="peer sr-only" />
+            <span class="grid h-5 w-5 place-items-center rounded-md border border-line bg-surface text-ink transition peer-checked:border-primary peer-checked:bg-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary/60 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-ink [&>svg]:opacity-0 peer-checked:[&>svg]:opacity-100">
+              <i data-lucide="check" class="h-3.5 w-3.5" stroke-width="3.5"></i>
+            </span>
+            Remember me
+          </label>
+
+          <!-- Submit -->
+          <button type="submit"
+            class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3.5 font-heading text-base font-bold text-ink transition hover:bg-primary-hover active:scale-[.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+            <i data-lucide="log-in" class="h-5 w-5"></i>
+            Sign in
+          </button>
+        </form>
+
+        <!-- Divider -->
+        <div class="my-8 flex items-center gap-4 text-sm text-muted" role="separator">
+          <span class="h-px flex-1 bg-line"></span>
+          Or continue with
+          <span class="h-px flex-1 bg-line"></span>
+        </div>
+
+        <!-- Social -->
+        <div class="grid grid-cols-1 gap-3 min-[420px]:grid-cols-3">
+          <button type="button" aria-label="Sign in with Google"
+            class="flex items-center justify-center gap-2.5 rounded-xl border border-line bg-surface px-4 py-3 text-sm transition hover:border-primary/60 hover:bg-[#161826] focus-visible:outline-2 focus-visible:outline-primary">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#4285F4" d="M23.5 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.46a5.52 5.52 0 0 1-2.4 3.62v3h3.88c2.27-2.09 3.56-5.17 3.56-8.81z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.88-3c-1.07.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.95H1.28v3.09A12 12 0 0 0 12 24z"/>
+              <path fill="#FBBC05" d="M5.29 14.29a7.2 7.2 0 0 1 0-4.58V6.62H1.28a12 12 0 0 0 0 10.76l4.01-3.09z"/>
+              <path fill="#EA4335" d="M12 4.76c1.76 0 3.34.61 4.59 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.28 6.62l4.01 3.09C6.23 6.87 8.88 4.76 12 4.76z"/>
+            </svg>
+            Google
+          </button>
+
+          <button type="button" aria-label="Sign in with GitHub"
+            class="flex items-center justify-center gap-2.5 rounded-xl border border-line bg-surface px-4 py-3 text-sm transition hover:border-primary/60 hover:bg-[#161826] focus-visible:outline-2 focus-visible:outline-primary">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 .5A11.5 11.5 0 0 0 8.36 22.9c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/>
+            </svg>
+            GitHub
+          </button>
+
+          <button type="button" aria-label="Sign in with Facebook"
+            class="flex items-center justify-center gap-2.5 rounded-xl border border-line bg-surface px-4 py-3 text-sm transition hover:border-primary/60 hover:bg-[#161826] focus-visible:outline-2 focus-visible:outline-primary">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#1877F2" d="M24 12a12 12 0 1 0-13.88 11.85v-8.38H7.08V12h3.04V9.36c0-3 1.79-4.67 4.53-4.67 1.31 0 2.69.23 2.69.23v2.95h-1.52c-1.49 0-1.96.93-1.96 1.88V12h3.33l-.53 3.47h-2.8v8.38A12 12 0 0 0 24 12z"/>
+            </svg>
+            Facebook
+          </button>
+        </div>
+
+        <p class="mt-8 text-center text-sm text-muted">
+          Don't have an account yet?
+          <a href="register.html" class="text-primary hover:text-primary-hover underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded">Please sign up</a>
+        </p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const form = document.getElementById('login-form');
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const toggle = document.getElementById('toggle-password');
+
+    toggle.addEventListener('click', () => {
+      const show = password.type === 'password';
+      password.type = show ? 'text' : 'password';
+      toggle.setAttribute('aria-pressed', String(show));
+      toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      toggle.innerHTML = `<i data-lucide="${show ? 'eye-off' : 'eye'}" class="h-5 w-5"></i>`;
+      lucide.createIcons();
+    });
+
+    function setError(input, message) {
+      const out = document.getElementById(`${input.id}-error`);
+      if (message) {
+        input.setAttribute('aria-invalid', 'true');
+        out.textContent = message;
+        out.classList.remove('hidden');
+      } else {
+        input.removeAttribute('aria-invalid');
+        out.textContent = '';
+        out.classList.add('hidden');
+      }
+      return !message;
+    }
+
+    function validate() {
+      const emailOk = setError(
+        email,
+        !email.value.trim() ? 'Enter your email address.'
+          : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value) ? 'Enter a valid email address, like you@example.com.'
+          : ''
+      );
+      const passOk = setError(password, password.value ? '' : 'Enter your password.');
+      return emailOk && passOk;
+    }
+
+    [email, password].forEach((el) => el.addEventListener('input', () => {
+      if (el.hasAttribute('aria-invalid')) validate();
+    }));
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!validate()) {
+        (email.hasAttribute('aria-invalid') ? email : password).focus();
+        return;
+      }
+      // Replace with your authentication request
+      console.log('Signing in', { email: email.value, remember: form.remember.checked });
+    });
+  </script>
+</body>
+</html>
